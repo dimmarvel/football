@@ -1,6 +1,6 @@
 # Football APP
 
-### Footbal - application for football trainers, to work with a database of students, tracking their progress in the format of grades.
+ Footbal - application for football trainers, to work with a database of students, tracking their progress in the format of grades.
 
 ---
 

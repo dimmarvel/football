@@ -4,7 +4,8 @@
 
 namespace fb
 {
-    application::application()
+    application::application(settings& s)
+    :   _setting(s)
     {
         spdlog::info("Application created");
     }

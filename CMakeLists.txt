@@ -8,8 +8,10 @@ HunterGate(
 project(Football)
 
 hunter_add_package(Boost COMPONENTS regex system filesystem)
+hunter_add_package(RedisClient)
 
 find_package(Boost CONFIG REQUIRED regex system filesystem)
+find_package(RedisClient CONFIG REQUIRED)
 
 include_directories("include")
 include_directories("libs")

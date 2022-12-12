@@ -7,11 +7,11 @@ namespace fb
     application::application(settings& s)
     :   _setting(s)
     {
-        spdlog::info("Application created");
+        spdlog::info("[APP] Application created");
     }
 
     void application::start()
     {
-        spdlog::info("Application start");
+        spdlog::info("[APP] Application start");
     }
 }

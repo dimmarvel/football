@@ -2,8 +2,8 @@ project(fbserver)
 
 set(LIBRARIES 
         ${PROJECT_MODULES}
-        Boost::boost
-        RedisClient::RedisClient)
+        Boost::boost)
+        
 file(GLOB_RECURSE FBSERVER_CPP "${PROJECT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE FBSERVER_HPP "${PROJECT_SOURCE_DIR}/*.hpp")
 

@@ -17,7 +17,7 @@ include_directories("include")
 include_directories("libs")
 include_directories("3rd/spdlog/include")
 
-set(PROJECT_MODULES config)
+set(PROJECT_MODULES core config)
 
 add_subdirectory(libs)
 add_subdirectory(football)

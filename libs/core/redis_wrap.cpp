@@ -60,4 +60,11 @@ namespace fb::core
         error_handle(r);
         return r.toString();
     }
+
+    std::string redis_wrap::get(int key)
+    {
+        redisclient::RedisValue r = _redis_client.command("GET", {std::to_string(key)});
+        error_handle(r);
+        return r.toString();
+    }
 }

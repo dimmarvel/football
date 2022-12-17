@@ -13,18 +13,20 @@ Init submodule:
 Run make Makefile for build:
 
 ```
-make build   - cmake and make app
-make run     - run app
+make build      - cmake and make
+make run_app    - run app
+make run_tests  - run tests
 ```
 
 # Libs
 App libs:
 - config - app settings handler lib;
 - core - core functional, redis wrapper, etc;
+Another libs:
+- tests - use gtest lib;
 
 Third party libraries:
 - spdlog;
-
 
 # Run example
 

@@ -18,8 +18,9 @@ find_package(GTest CONFIG REQUIRED)
 include_directories("include")
 include_directories("libs")
 include_directories("3rd/spdlog/include")
+include_directories("3rd/yas/include")
 
-set(PROJECT_MODULES core config)
+set(PROJECT_MODULES database config storage)
 
 add_subdirectory(libs)
 add_subdirectory(football)

@@ -1,4 +1,4 @@
-#include <core/redis_wrap.hpp>
+#include <core/database/redis_wrap.hpp>
 #include <gtest/gtest.h>
 #include <memory>
 

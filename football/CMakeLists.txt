@@ -1,8 +1,7 @@
 project(fbserver)
 
 set(LIBRARIES 
-        ${PROJECT_MODULES}
-        Boost::boost)
+        ${PROJECT_MODULES})
 
 file(GLOB_RECURSE FBSERVER_CPP "${PROJECT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE FBSERVER_HPP "${PROJECT_SOURCE_DIR}/*.hpp")

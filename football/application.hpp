@@ -1,5 +1,6 @@
 #include <api_application.hpp>
 #include <config/settings.hpp>
+#include <storage/storage.hpp>
 
 namespace fb
 {
@@ -14,5 +15,7 @@ namespace fb
 
     private:
         settings& _setting;
+
+        std::shared_ptr<storage> _storage;
     };
 }

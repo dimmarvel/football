@@ -2,7 +2,6 @@ project(fbtests)
 
 set(LIBRARIES 
         ${PROJECT_MODULES}
-        Boost::boost
         GTest::gtest)
 
 file(GLOB_RECURSE FBTESTS_CPP "${PROJECT_SOURCE_DIR}/*.cpp")

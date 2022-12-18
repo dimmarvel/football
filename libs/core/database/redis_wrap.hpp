@@ -17,12 +17,14 @@ namespace fb::core
         redis_wrap();
     
     public:
-        void connect();
         void write(std::pair<std::string, std::string> key_val);
         void write(std::pair<int, int> key_val);
         std::string get(std::string key);
         std::string get(int key);
-        
+    
+    private:
+        void connect();
+
     private:
         ip_address      _addr;
         port            _port;

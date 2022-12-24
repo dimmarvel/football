@@ -1,19 +1,22 @@
 #pragma once
 #include <core/database/redis_wrap.hpp>
+#include <api_storage.hpp>
 #include "objects.hpp"
 
 namespace fb 
 {
-    class storage 
+    class storage : public api::api_storage
     {
     public:
         storage();
         ~storage() {}
         
-        void add_child(const objects::child& child);
-        void add_team(const objects::team& team);
+        virtual void add_child(objects::child& child) override;
+        virtual void add_team(const objects::team& team) override;
 
     private:
         fb::core::redis_wrap _db;
+
+        uint32_t _child_id;
     };
 }

@@ -1,6 +1,7 @@
+#pragma once
 #include <cstdint>
 
-namespace api
+namespace fb::api
 {
     using mheight = uint16_t;
     using mweight = uint16_t;

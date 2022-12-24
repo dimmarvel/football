@@ -1,3 +1,4 @@
+#pragma once
 #include <api_objects.hpp>
 #include <api_types.hpp>
 #include <string>
@@ -6,8 +7,13 @@
 
 namespace fb::objects
 {
+    class object
+    {
+    public:
+        uint32_t id;
+    };
 
-    class skills
+    class skills 
     {
     public:
         api::rating technic;
@@ -28,7 +34,7 @@ namespace fb::objects
     CONVERTION_IMPL();
     };
 
-    class child
+    class child : public object
     {
     public:
         std::string name;
@@ -53,7 +59,7 @@ namespace fb::objects
     CONVERTION_IMPL();
     };
 
-    class team
+    class team : public object
     {
     public:
         std::string name;

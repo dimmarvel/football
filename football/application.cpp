@@ -10,12 +10,15 @@ namespace fb
     _storage(std::make_shared<storage>())
     {
         spdlog::info("[APP] Application created");
-        _storage->add_child({});
-        _storage->add_team({});
     }
 
     void application::start()
     {
         spdlog::info("[APP] Application start");
+    }
+
+    std::shared_ptr<api::api_storage> application::get_storage()
+    {
+        return _storage;
     }
 }

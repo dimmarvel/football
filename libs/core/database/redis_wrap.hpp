@@ -1,8 +1,10 @@
 #pragma once
+#include <api_storage.hpp>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <redisclient/redissyncclient.h>
-#include <memory>
+#include <core/database/defines.hpp>
 
 namespace fb::core
 {
@@ -17,20 +19,25 @@ namespace fb::core
         redis_wrap();
     
     public:
-        void write(std::pair<std::string, std::string> key_val);
-        void write(std::pair<int, int> key_val);
-        std::string get(std::string key);
-        std::string get(int key);
+        void write(api::table t, std::pair<std::string, std::string> key_val);
+        void write(api::table t, std::pair<int, int> key_val);
+        void write_list(api::table t, std::pair<std::string, std::string> key_val);
+
+        std::string get(api::table t, std::string key);
+        std::string get(api::table t, int key);
     
     private:
+        void change_table(api::table t);
         void connect();
 
     private:
         ip_address      _addr;
         port            _port;
-        tcp_endpoint   _endpoint;
+        tcp_endpoint    _endpoint;
+        api::table      _table_cache;
 
         boost::asio::io_service         _io_service;
         redisclient::RedisSyncClient    _redis_client;
+
     };
 }

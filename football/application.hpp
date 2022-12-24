@@ -9,13 +9,15 @@ namespace fb
     public:
         application(settings& s);
         ~application() override {}
-    
+
     public:
-        virtual void start() override;
+        virtual std::shared_ptr<api::api_storage> get_storage() override;
+        
+        void start();
 
     private:
         settings& _setting;
 
-        std::shared_ptr<storage> _storage;
+        std::shared_ptr<api::api_storage> _storage;
     };
 }

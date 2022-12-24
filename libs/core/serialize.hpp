@@ -1,3 +1,4 @@
+#pragma once
 #include <yas/serialize.hpp>
 #include <yas/std_types.hpp>
 #include <strstream>
@@ -20,6 +21,7 @@ namespace fb::core
         yas::intrusive_buffer buf = os.get_intrusive_buffer();
         return std::string(buf.data, buf.size);
     }
+    
     template<typename _Obj>
     inline _Obj from_json(const std::string& buf)
     {

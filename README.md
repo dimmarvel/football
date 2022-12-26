@@ -27,6 +27,8 @@ Another libs:
 
 Third party libraries:
 - spdlog;
+- yas;
+- hiredis && redis-plus-plus
 
 # Run example
 

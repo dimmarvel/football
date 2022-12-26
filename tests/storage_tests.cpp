@@ -10,6 +10,7 @@ TEST(storage, child)
     
     fb::objects::child ch;
     fb::objects::child ch2;
+    
     ch.id = app.get_storage()->next_id();
     ch.name = "qweasd";
     ch2.id = app.get_storage()->next_id();

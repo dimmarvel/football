@@ -3,86 +3,85 @@
 
 namespace fb::core
 {
-    void error_handle(redisclient::RedisValue r)
+    std::string to_connect_str(std::string addr, port p)
     {
-        if(r.isError())
-            spdlog::error("[RedisDB] Error: " + r.toString());
-        if(!r.isOk())
-            spdlog::error("[RedisDB] Error: " + r.toString());
+        return std::string("tcp://" + addr + ":" + std::to_string(p));
     }
-
+    
     redis_wrap::redis_wrap(std::string address, port p)
     :
     _addr(ip_address::from_string(address)),
     _port(p),
-    _endpoint(_addr, _port),
-    _redis_client(_io_service),
-    _table_cache(0)
+    _table_cache(0),
+    _full_addr(to_connect_str(address, p)),
+    _redis(_full_addr)
     {
-        spdlog::info("[RedisDB] Connect to: {}:{}", _addr.to_string(), _port);
-        connect();
+        spdlog::info("[RedisDB] Connect to: {}", _full_addr);
     }
 
     redis_wrap::redis_wrap()
     :
     _addr(ip_address::from_string("127.0.0.1")), // TODO: create constant
     _port(6379),
-    _endpoint(_addr, _port),
-    _redis_client(_io_service)
+    _table_cache(0),
+    _full_addr(to_connect_str(_addr.to_string(), _port)),
+    _redis(_full_addr)
     {
-        spdlog::info("[RedisDB] Connect to local: {}:{}", _addr.to_string(), _port);
-        connect();
-    }
-
-    void redis_wrap::connect()
-    {
-        boost::system::error_code ec;
-        _redis_client.connect(_endpoint, ec);
-        if(ec) throw std::runtime_error("[RedisDB] Can't connect to redis: " + ec.message());
+        spdlog::info("[RedisDB] Connect to local: {}", _full_addr);
     }
 
     void redis_wrap::write(api::table t, std::pair<std::string, std::string> key_val)
     {
-        change_table(t);
-        redisclient::RedisValue r = _redis_client.command("SET", {key_val.first, key_val.second});
-        error_handle(r);
+        choice_table(t);
+        _redis.set(key_val.first, key_val.second);
     }
 
     void redis_wrap::write(api::table t, std::pair<int, int> key_val)
     {
-        change_table(t);
-        redisclient::RedisValue r = 
-            _redis_client.command("SET", {std::to_string(key_val.first), std::to_string(key_val.second)});
-        error_handle(r);
-    }
-    
-    void redis_wrap::write_list(api::table t, std::pair<std::string, std::string> key_val)
-    {
-        change_table(t);
-        redisclient::RedisValue r = _redis_client.command("LPUSH", {key_val.first, key_val.second});
-        error_handle(r);
+        choice_table(t);
+        _redis.set(std::to_string(key_val.first), std::to_string(key_val.second));
     }
 
     std::string redis_wrap::get(api::table t, std::string key)
     {
-        change_table(t);
-        redisclient::RedisValue r = _redis_client.command("GET", {key});
-        error_handle(r);
-        return r.toString();
+        choice_table(t);
+        auto val = _redis.get(key);
+        if (val) return *val;
+        return "";
     }
 
     std::string redis_wrap::get(api::table t, int key)
     {
-        change_table(t);
-        redisclient::RedisValue r = _redis_client.command("GET", {std::to_string(key)});
-        error_handle(r);
-        return r.toString();
+        choice_table(t);
+        auto val = _redis.get(std::to_string(key));
+        if (val) return *val;
+        return "";
     }
 
-    void redis_wrap::change_table(api::table t)
+    void redis_wrap::choice_table(api::table t)
     {
         if(_table_cache == t) return;
-        redisclient::RedisValue r = _redis_client.command("SELECT", {std::to_string(t)});
-        error_handle(r);
+        _table_cache = t;
+        _redis.command<void>("SELECT", t);
+    }
+
+    std::unordered_set<std::string> redis_wrap::get_keys(api::table t, std::string pattern)
+    {
+        choice_table(t);
+        std::unordered_set<std::string> keys;
+        _redis.keys(pattern, std::inserter(keys, keys.begin()));
+        return keys;
+    }
+
+    size_t redis_wrap::erase(api::table t, std::string key)
+    {
+        choice_table(t);
+        return _redis.del(key);
+    }
+
+    size_t redis_wrap::erase(api::table t, int key)
+    {
+        choice_table(t);
+        return _redis.del(std::to_string(key));
     }
 }

@@ -3,13 +3,12 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/address.hpp>
-#include <redisclient/redissyncclient.h>
 #include <core/database/defines.hpp>
+#include <sw/redis++/redis++.h>
 
 namespace fb::core
 {
     using ip_address = boost::asio::ip::address;
-    using tcp_endpoint = boost::asio::ip::tcp::endpoint;
     using port = unsigned short;
 
     class redis_wrap
@@ -21,23 +20,23 @@ namespace fb::core
     public:
         void write(api::table t, std::pair<std::string, std::string> key_val);
         void write(api::table t, std::pair<int, int> key_val);
-        void write_list(api::table t, std::pair<std::string, std::string> key_val);
 
         std::string get(api::table t, std::string key);
         std::string get(api::table t, int key);
-    
-    private:
-        void change_table(api::table t);
-        void connect();
+        std::unordered_set<std::string> get_keys(api::table t, std::string pattern = "*");
 
-    private:
+        size_t erase(api::table t, std::string key);
+        size_t erase(api::table t, int key);
+    
+    protected:
+        void choice_table(api::table t);
+        
+    protected:
         ip_address      _addr;
         port            _port;
-        tcp_endpoint    _endpoint;
         api::table      _table_cache;
+        std::string     _full_addr;   // example: tcp://127.0.0.1:6379
 
-        boost::asio::io_service         _io_service;
-        redisclient::RedisSyncClient    _redis_client;
-
+        sw::redis::Redis _redis;
     };
 }

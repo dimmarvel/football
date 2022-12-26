@@ -2,7 +2,6 @@ project(storage)
 
 set(LIBRARIES database)
 
-
 file(GLOB_RECURSE STORAGE_CPP "${PROJECT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE STORAGE_HPP "${PROJECT_SOURCE_DIR}/*.hpp")
 

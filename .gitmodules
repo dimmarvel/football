@@ -4,3 +4,9 @@
 [submodule "3rd/yas"]
 	path = 3rd/yas
 	url = https://github.com/niXman/yas
+[submodule "3rd/hiredis"]
+	path = 3rd/hiredis
+	url = https://github.com/redis/hiredis.git
+[submodule "3rd/redis-plus-plus"]
+	path = 3rd/redis-plus-plus
+	url = https://github.com/sewenew/redis-plus-plus

@@ -1,6 +1,7 @@
 #pragma once
 #include <api_storage.hpp>
 #include <memory>
+#include <boost/asio.hpp> // TODO: change to needable hpp
 
 namespace fb::api 
 {
@@ -11,5 +12,6 @@ namespace fb::api
         virtual ~api_application() {}
 
         virtual std::shared_ptr<api::api_storage> get_storage() = 0;
+        virtual boost::asio::io_context& get_context() = 0;
     };
 }

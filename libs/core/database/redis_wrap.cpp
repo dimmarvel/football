@@ -10,7 +10,7 @@ namespace fb::core
     
     redis_wrap::redis_wrap(std::string address, port p)
     :
-    _addr(ip_address::from_string(address)),
+    _addr(ip::make_address(address)),
     _port(p),
     _table_cache(0),
     _full_addr(to_connect_str(address, p)),
@@ -21,10 +21,10 @@ namespace fb::core
 
     redis_wrap::redis_wrap()
     :
-    _addr(ip_address::from_string("127.0.0.1")), // TODO: create constant
+    _addr(ip::make_address("127.0.0.1")), // TODO: create constant
     _port(6379),
     _table_cache(0),
-    _full_addr(to_connect_str(_addr.to_string(), _port)),
+    _full_addr(to_connect_str("127.0.0.1", _port)),
     _redis(_full_addr)
     {
         spdlog::info("[RedisDB] Connect to local: {}", _full_addr);

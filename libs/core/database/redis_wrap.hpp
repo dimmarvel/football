@@ -1,14 +1,13 @@
 #pragma once
 #include <api_storage.hpp>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <core/database/defines.hpp>
 #include <sw/redis++/redis++.h>
 
 namespace fb::core
 {
-    using ip_address = boost::asio::ip::address;
+    using namespace boost::asio;
     using port = unsigned short;
 
     class redis_wrap
@@ -32,7 +31,7 @@ namespace fb::core
         void choice_table(api::table t);
         
     protected:
-        ip_address      _addr;
+        ip::address     _addr;
         port            _port;
         api::table      _table_cache;
         std::string     _full_addr;   // example: tcp://127.0.0.1:6379

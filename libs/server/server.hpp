@@ -1,6 +1,7 @@
 #pragma once
 #include <api_application.hpp>
 #include <api_server.hpp>
+#include <boost/asio.hpp> 
 
 namespace fb
 {
@@ -22,5 +23,5 @@ namespace fb
         api::api_application&   _app;
         ip::tcp::acceptor       _acceptor;
         ip::tcp::socket         _socket;
-    }
+    };
 }

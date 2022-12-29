@@ -1,5 +1,6 @@
 #pragma once
 #include <api_types.hpp>
+#include <api_application.hpp>
 #include <boost/asio.hpp> // TODO: change to needable hpp
 
 namespace fb::api 

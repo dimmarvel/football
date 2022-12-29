@@ -36,7 +36,7 @@ message("HIREDIS_LIB - " ${HIREDIS_LIB})
 find_library(REDIS_PLUS_PLUS_LIB redis++)
 message("REDIS_PLUS_PLUS_LIB - " ${REDIS_PLUS_PLUS_LIB})
 
-set(PROJECT_MODULES database config storage)
+set(PROJECT_MODULES database config storage server)
 
 add_subdirectory(3rd)
 add_subdirectory(libs)

@@ -1,7 +1,7 @@
 #include <api_application.hpp>
+#include <api_server.hpp>
 #include <config/settings.hpp>
 #include <storage/storage.hpp>
-#include <server/server.hpp>
 
 namespace fb
 {

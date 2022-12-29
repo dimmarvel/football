@@ -1,4 +1,5 @@
 #include "application.hpp"
+#include <server/server.hpp>
 #include <iostream>
 #include <spdlog/spdlog.h>
 
@@ -8,7 +9,7 @@ namespace fb
     :   
     _setting(s),
     _storage(std::make_shared<storage>()),
-    _server(std::make_shared<api::api_server>())
+    _server(std::make_shared<server>(*this))
     {
         spdlog::info("[APP] Application created");
     }
@@ -16,6 +17,8 @@ namespace fb
     void application::start()
     {
         spdlog::info("[APP] Application start");
+        auto work = boost::asio::make_work_guard(_context);
+        _context.run();
     }
 
     void application::stop()
@@ -27,5 +30,10 @@ namespace fb
     std::shared_ptr<api::api_storage> application::get_storage()
     {
         return _storage;
+    }
+
+    boost::asio::io_context& application::get_context()
+    {
+        return _context;
     }
 }

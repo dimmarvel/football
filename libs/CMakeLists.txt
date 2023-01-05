@@ -1,4 +1,5 @@
 add_subdirectory(config)
 add_subdirectory(core)
+add_subdirectory(database)
 add_subdirectory(storage)
 add_subdirectory(server)

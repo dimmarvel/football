@@ -1,5 +1,5 @@
 #include <mock.hpp>
-#include <core/database/defines.hpp>
+#include <database/defines.hpp>
 #include <storage/objects/objects.hpp>
 
 using namespace tests;

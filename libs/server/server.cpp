@@ -1,43 +1,70 @@
 #include "server.hpp"
 #include <spdlog/spdlog.h>
+#include <boost/asio/io_context.hpp>
 
 namespace fb
 {
-    server::server(api::api_application& app)
+    tcp_server::tcp_server(api::api_application& app)
     :
-    _app(app),
-    _acceptor(_app.get_context(), ip::tcp::endpoint(ip::tcp::v4(), 8080)),
-    _socket(app.get_context())
-    {
+    _app(app), 
+    _endpoint(boost::asio::ip::address_v4::any(), 80),
+    _acceptor(app.get_context())
+    {}
 
-        spdlog::info("Accept on ip: {}", _acceptor.local_endpoint().address().to_string());
-        _acceptor.accept(_socket);
-        std::string message = read(_socket);
-        spdlog::info("Recieve message: {}", message);
-        send(_socket, "Hello From Server!");
-    }
-
-    std::string server::read(ip::tcp::socket& socket) 
+    void tcp_server::start()
     {
-        boost::asio::streambuf buf;
-        boost::asio::read_until( socket, buf, "\n" );
-        std::string data = boost::asio::buffer_cast<const char*>(buf.data());
-        return data;
-    }
-
-    void server::send(ip::tcp::socket& socket, const std::string& message) 
-    {
-        const std::string msg = message + "\n";
-        boost::asio::write(socket, boost::asio::buffer(message) );
+        if(_acceptor.is_open())
+            return; //TODO: handler
+        
+        _acceptor.open(_endpoint.protocol());
+        _acceptor.set_option(ip::tcp::socket::reuse_address(true));
+        
+        _acceptor.bind(_endpoint);
+        _acceptor.listen();
+        start_accept();
     }
     
-    void server::start()
+    void tcp_server::start_accept()
     {
+        connection::con_ptr new_connection =
+        connection::create(_acceptor.get_executor());
 
+        _acceptor.async_accept(new_connection->socket(),
+            boost::bind(&tcp_server::handle_accept, 
+                this, 
+                new_connection,
+                boost::asio::placeholders::error));
     }
 
-    void server::stop()
+    void tcp_server::handle_accept(connection::con_ptr new_connection, const boost::system::error_code& error)
     {
-        
+        if (!error)
+        {
+            new_connection->send("Success connection");
+        }
+
+        start_accept();
+    }
+
+    ip::tcp::socket& connection::socket()
+    {
+        return _socket;
+    }
+
+    void connection::send(std::string message)
+    {
+        boost::asio::async_write(_socket, boost::asio::buffer(message),
+            boost::bind(&connection::handle_write, shared_from_this(),
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+    }
+
+    connection::connection(boost::asio::any_io_executor ctx)
+    : _socket(ctx)
+    {}
+
+    void connection::handle_write(const boost::system::error_code& err, size_t s)
+    {
+
     }
 }

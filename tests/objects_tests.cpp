@@ -1,5 +1,5 @@
 #include <storage/objects/objects.hpp>
-#include <core/database/defines.hpp>
+#include <database/defines.hpp>
 #include <mock.hpp>
 
 TEST(objects, child)

@@ -2,7 +2,7 @@
 #include <api_storage.hpp>
 
 #include <boost/asio/ip/address.hpp>
-#include <core/database/defines.hpp>
+#include <database/defines.hpp>
 #include <sw/redis++/redis++.h>
 
 namespace fb::core

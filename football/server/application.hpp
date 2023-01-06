@@ -1,8 +1,8 @@
+#pragma once
 #include <api_application.hpp>
 #include <server/server.hpp>
 #include <config/settings.hpp>
 #include <storage/storage.hpp>
-#include <core/io_threads.hpp>
 
 namespace fb
 {
@@ -21,7 +21,6 @@ namespace fb
 
     private:
         settings& _setting;
-        //fb::core::io_threads _threads;
         boost::asio::io_context _context;
 
         std::shared_ptr<tcp_server>         _server;

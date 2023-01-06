@@ -10,8 +10,9 @@ project(Football)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_options(-Wall -Wno-deprecated)
+
 hunter_add_package(Boost COMPONENTS system program_options thread context)
-hunter_add_package(RedisClient)
 hunter_add_package(GTest)
 
 find_package(Threads REQUIRED)
@@ -19,6 +20,7 @@ find_package(Boost CONFIG REQUIRED system program_options thread context)
 find_package(GTest CONFIG REQUIRED)
 
 include_directories("include")
+include_directories("football")
 include_directories("libs")
 include_directories("tests")
 include_directories("3rd/spdlog/include")
@@ -36,7 +38,7 @@ message("HIREDIS_LIB - " ${HIREDIS_LIB})
 find_library(REDIS_PLUS_PLUS_LIB redis++)
 message("REDIS_PLUS_PLUS_LIB - " ${REDIS_PLUS_PLUS_LIB})
 
-set(PROJECT_MODULES database config storage server core)
+set(PROJECT_MODULES database config storage server core rpc)
 
 add_subdirectory(3rd)
 add_subdirectory(libs)

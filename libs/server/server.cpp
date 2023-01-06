@@ -13,6 +13,7 @@ namespace fb
 
     void tcp_server::start()
     {
+        spdlog::info("[server] server start at: {}", _endpoint.address().to_string());
         if(_acceptor.is_open())
             return; //TODO: handler
         
@@ -38,9 +39,10 @@ namespace fb
 
     void tcp_server::handle_accept(connection::con_ptr new_connection, const boost::system::error_code& error)
     {
+        spdlog::info("[server] new connection from: {}", new_connection->socket().remote_endpoint().address().to_string());
         if (!error)
         {
-            new_connection->send("Success connection");
+            new_connection->send("ping\n");
         }
 
         start_accept();
@@ -53,6 +55,7 @@ namespace fb
 
     void connection::send(std::string message)
     {
+        spdlog::info("[server] send message: {}", message);
         boost::asio::async_write(_socket, boost::asio::buffer(message),
             boost::bind(&connection::handle_write, shared_from_this(),
             boost::asio::placeholders::error,
@@ -65,6 +68,7 @@ namespace fb
 
     void connection::handle_write(const boost::system::error_code& err, size_t s)
     {
-
+        char buff[1024] = {};
+        _socket.async_receive(boost::asio::buffer(buff), std::bind(&connection::send, shared_from_this(), "ping\n"));
     }
 }

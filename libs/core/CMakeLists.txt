@@ -1,12 +1,10 @@
 project(core)
 
-set(LIBRARIES 
-        Boost::boost
-        RedisClient::RedisClient)
+set(LIBRARIES)
 
-file(GLOB_RECURSE CONFIG_CPP "${PROJECT_SOURCE_DIR}/*.cpp")
-file(GLOB_RECURSE CONFIG_HPP "${PROJECT_SOURCE_DIR}/*.hpp")
+file(GLOB_RECURSE CORE_CPP "${PROJECT_SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE CORE_HPP "${PROJECT_SOURCE_DIR}/*.hpp")
 
-add_library(${PROJECT_NAME} STATIC ${CONFIG_CPP} ${CONFIG_HPP})
+add_library(${PROJECT_NAME} STATIC ${CORE_CPP} ${CORE_HPP})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARIES})

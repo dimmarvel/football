@@ -7,17 +7,40 @@ HunterGate(
 
 project(Football)
 
-hunter_add_package(Boost COMPONENTS regex system filesystem)
-hunter_add_package(RedisClient)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Boost CONFIG REQUIRED regex system filesystem)
-find_package(RedisClient CONFIG REQUIRED)
+add_compile_options(-Wall -Wno-deprecated)
+
+hunter_add_package(Boost COMPONENTS system program_options thread context)
+hunter_add_package(GTest)
+
+find_package(Threads REQUIRED)
+find_package(Boost CONFIG REQUIRED system program_options thread context)
+find_package(GTest CONFIG REQUIRED)
 
 include_directories("include")
+include_directories("football")
 include_directories("libs")
+include_directories("tests")
 include_directories("3rd/spdlog/include")
+include_directories("3rd/yas/include")
+include_directories("3rd/hiredis")
+include_directories("3rd/redis-plus-plus")
+include_directories(${HIREDIS_HEADER})
+include_directories(${REDIS_PLUS_PLUS_HEADER})
 
-set(PROJECT_MODULES core config)
+message("HIREDIS_HEADER - " ${HIREDIS_HEADER})
+message("REDIS_PLUS_PLUS_HEADER - " ${REDIS_PLUS_PLUS_HEADER})
 
+find_library(HIREDIS_LIB hiredis)
+message("HIREDIS_LIB - " ${HIREDIS_LIB})
+find_library(REDIS_PLUS_PLUS_LIB redis++)
+message("REDIS_PLUS_PLUS_LIB - " ${REDIS_PLUS_PLUS_LIB})
+
+set(PROJECT_MODULES database config storage server core rpc)
+
+add_subdirectory(3rd)
 add_subdirectory(libs)
 add_subdirectory(football)
+add_subdirectory(tests)

@@ -1,0 +1,2 @@
+find_path(HIREDIS_HEADER hiredis)
+find_path(REDIS_PLUS_PLUS_HEADER sw)

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace api 
+namespace fb::api 
 {
     class api_settings
     {

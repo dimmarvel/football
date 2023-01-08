@@ -9,7 +9,7 @@ namespace fb::objects
     {}
 
     child::child(std::string name, std::string surname, std::string patronymic, std::string pos,
-                api::mheight height, api::mweight weight, best_foot b_foot, std::string notes,
+                api::mheight_t height, api::mweight_t weight, best_foot b_foot, std::string notes,
                 const skills& skill)
     :   object(),
     name(name), surname(surname), patronymic(patronymic), position(pos), height(height), 

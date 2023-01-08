@@ -1,6 +1,8 @@
 project(core)
 
-set(LIBRARIES)
+set(LIBRARIES
+        Boost::boost
+        Boost::context)
 
 file(GLOB_RECURSE CORE_CPP "${PROJECT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE CORE_HPP "${PROJECT_SOURCE_DIR}/*.hpp")

@@ -10,6 +10,9 @@ run_client :
 run_tests :
 	cd _build/tests && ./fbtests
 
+clear :
+	cd .. && chown -R dmatsiukhov football/
+
 _build :
 	mkdir _build
 

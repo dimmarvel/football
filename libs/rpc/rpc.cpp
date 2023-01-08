@@ -46,16 +46,13 @@ namespace fb
             
         // process the msg
         std::string msg(_read_buffer, bytes);
+        spdlog::info("[rpc] get message: {}", msg);
         if (msg.find("ping") == 0) on_ping(msg);
     }
 
 
     void rpc::on_ping(const std::string& msg) 
     {
-        std::istringstream in(msg);
-        std::string answer;
-        in >> answer >> answer;
-        spdlog::info("[rpc] get ping message");
         postpone_ping();
     }
 
@@ -84,7 +81,7 @@ namespace fb
     
     void rpc::do_write(const std::string& msg) 
     {
-        if ( !started() ) return;
+        if (!started()) return;
         std::copy(msg.begin(), msg.end(), _write_buffer);
         _sock.async_write_some(buffer(_write_buffer, msg.size()), MEM_FN2(on_write,_1,_2));
     }

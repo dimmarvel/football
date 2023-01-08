@@ -1,13 +1,13 @@
 #pragma once
-#include <api_application.hpp>
 #include <api_server.hpp>
+#include <core/timer.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <mutex>
 
 namespace fb
 {
     using namespace boost::asio; // TODO: delete?
-
     class connection : public std::enable_shared_from_this<connection>
     {
     public:
@@ -30,6 +30,9 @@ namespace fb
         ip::tcp::socket _socket;
     };
 
+    using connections = std::vector<std::shared_ptr<connection>>;
+
+    //TODO: create event system for connections
     class tcp_server
     {
     public:
@@ -40,9 +43,15 @@ namespace fb
         void start_accept();
         void handle_accept(connection::con_ptr new_connection, const boost::system::error_code& error);
 
+        void show_connections();
+    private:
+        std::mutex              _mutex;
         api::api_application&   _app;
         ip::tcp::endpoint       _endpoint;
         ip::tcp::acceptor       _acceptor;
+        connections             _connections;
+
+        core::timer _timer;
     };
 
 }

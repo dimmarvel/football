@@ -21,16 +21,16 @@ namespace fb::objects
     class skills 
     {
     public:
-        api::rating technic = 0;
-        api::rating protection = 0;
-        api::rating speed = 0;
-        api::rating endurance = 0;
-        api::rating hit = 0;
-        api::rating pass = 0;
-        api::rating physic = 0;
-        api::rating game_thinking = 0;
-        api::rating sociability = 0;
-        api::rating learnability = 0;
+        api::rating_t technic = 0;
+        api::rating_t protection = 0;
+        api::rating_t speed = 0;
+        api::rating_t endurance = 0;
+        api::rating_t hit = 0;
+        api::rating_t pass = 0;
+        api::rating_t physic = 0;
+        api::rating_t game_thinking = 0;
+        api::rating_t sociability = 0;
+        api::rating_t learnability = 0;
         
         double average_rating;
 
@@ -48,8 +48,8 @@ namespace fb::objects
 
         std::string position;
 
-        api::mheight height = 0;
-        api::mweight weight = 0;
+        api::mheight_t height = 0;
+        api::mweight_t weight = 0;
 
         best_foot b_foot;
 
@@ -61,7 +61,7 @@ namespace fb::objects
     public:
         child() = default;
         child(  std::string name, std::string surname, std::string patronymic, std::string pos,
-                api::mheight height, api::mweight weight, best_foot b_foot, std::string notes,
+                api::mheight_t height, api::mweight_t weight, best_foot b_foot, std::string notes,
                 const skills& skill);
 
     SERIALIZABLE_OBJ(   id, name, surname, patronymic, position, height,

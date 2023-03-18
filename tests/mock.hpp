@@ -31,7 +31,7 @@ namespace tests
         boost::asio::io_context _context;
 
         std::shared_ptr<fb::api::api_storage>   _storage_real;
-        std::shared_ptr<fb::tcp_server>    _server_real;
+        std::shared_ptr<fb::tcp_server>         _server_real;
     };
 
 }

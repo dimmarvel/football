@@ -1,8 +1,9 @@
 #pragma once
 #include <api_application.hpp>
+#include <api_hub.hpp>
 #include <server/server.hpp>
 #include <config/settings.hpp>
-#include <storage/storage.hpp>
+#include <api_storage.hpp>
 
 namespace fb
 {
@@ -23,7 +24,7 @@ namespace fb
         settings& _setting;
         boost::asio::io_context _context;
 
-        std::shared_ptr<tcp_server>         _server;
+        std::shared_ptr<api::api_hub>       _hub;
         std::shared_ptr<api::api_storage>   _storage;
     };
 }

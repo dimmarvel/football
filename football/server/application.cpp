@@ -1,5 +1,7 @@
 #include "application.hpp"
 #include <spdlog/spdlog.h>
+#include <storage/storage.hpp>
+#include <server/hub.hpp>
 
 namespace fb
 {
@@ -7,7 +9,7 @@ namespace fb
     :   
     _setting(s),
     _context(),
-    _server(std::make_shared<tcp_server>(*this)),
+    _hub(std::make_shared<hub>(*this)),
     _storage(std::make_shared<storage>())
     {
         spdlog::info("[app] Application server created");
@@ -16,7 +18,7 @@ namespace fb
     void application::start()
     {
         spdlog::info("[app] Application server start");
-        _server->start();
+        _hub->start();
         _context.run();
     }
 

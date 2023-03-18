@@ -1,6 +1,6 @@
 #pragma once
 
-namespace fb::objects
+namespace fb::objects // TODO: add api::....
 {
     enum best_foot
     {

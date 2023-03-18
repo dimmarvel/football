@@ -1,5 +1,5 @@
 build : _build
-	cd $< && cmake -Dgtest_build_samples=ON -DCMAKE_BUILD_TYPE=Debug .. && make -j9
+	cd $< && cmake -Dgtest_build_samples=ON -DCMAKE_BUILD_TYPE=Debug .. && make
 
 run_server :
 	cd _build/football && ./server/fbserver

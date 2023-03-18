@@ -14,6 +14,36 @@
 namespace fb::core
 {
     template<typename _Obj>
+    inline std::string to_binary(const _Obj& obj)
+    {
+        yas::mem_ostream os;
+        yas::binary_oarchive<yas::mem_ostream, yas::binary | yas::no_header> oa(os);
+        oa(obj);
+        yas::intrusive_buffer buff = os.get_intrusive_buffer();
+        return std::string(buff.data, buff.size);
+    }
+
+    template<typename _Obj>
+    inline std::string from_binary(const uint8_t* buff, size_t size)
+    {
+        _Obj obj;
+        yas::mem_istream is(buff, size);
+        yas::binary_iarchive<yas::mem_istream, yas::binary | yas::no_header> ia(is);
+        ia(obj);
+        return obj;
+    }
+
+    template<typename _Obj>
+    inline std::string from_binary(const std::string_view& buff)
+    {
+        _Obj obj;
+        yas::mem_istream is(buff.data(), buff.size());
+        yas::binary_iarchive<yas::mem_istream, yas::binary | yas::no_header> ia(is);
+        ia(obj);
+        return obj;
+    }
+
+    template<typename _Obj>
     inline std::string to_json(const _Obj& obj)
     {
         yas::mem_ostream os;

@@ -16,7 +16,7 @@ namespace fb::client
     void application::start()
     {
         spdlog::info("[app] Application client start");
-        _client->start(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::any(), 80));
+        _client->start(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::any(), 8080));
         _context.run();
     }
 

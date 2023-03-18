@@ -9,7 +9,6 @@ namespace boost::asio
 
 namespace fb::api 
 {
-    
     class api_application
     {
     public:

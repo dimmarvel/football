@@ -1,11 +1,14 @@
 #include "rpc.hpp"
 #include <spdlog/spdlog.h>
+#include <functional>
 
 #define MEM_FN1(x,y) std::bind(&self_type::x, shared_from_this(),y)
 #define MEM_FN2(x,y,z) boost::bind(&self_type::x, shared_from_this(),y,z)
 
 namespace fb
 {
+    namespace pl = std::placeholders;
+
     rpc::rpc(fb::client::application& app) 
     : 
     _app(app),
@@ -18,7 +21,7 @@ namespace fb
     void rpc::start(ip::tcp::endpoint ep) 
     {
         spdlog::info("[rpc] rpc start at: {}", ep.address().to_string());
-        _sock.async_connect(ep, std::bind(&rpc::on_connect, shared_from_this(), std::placeholders::_1));
+        _sock.async_connect(ep, std::bind(&rpc::on_connect, shared_from_this(), pl::_1));
     }
 
     void rpc::stop() 
@@ -31,7 +34,7 @@ namespace fb
     void rpc::on_connect(const error_code & err) 
     {
         if (!err) 
-            do_ping();
+            postpone_ping();
         else 
             stop();
     }
@@ -50,17 +53,15 @@ namespace fb
         if (msg.find("ping") == 0) on_ping(msg);
     }
 
-
     void rpc::on_ping(const std::string& msg) 
     {
         postpone_ping();
     }
 
-
     void rpc::do_ping() 
     {
         spdlog::info("[rpc] send ping message"); 
-        do_write("ping\n"); 
+        send_msg("ping"); 
     }
 
     void rpc::postpone_ping() 
@@ -76,14 +77,32 @@ namespace fb
     
     void rpc::do_read() 
     {
-        async_read(_sock, buffer(_read_buffer), MEM_FN2(read_complete,_1,_2), MEM_FN2(on_read,_1,_2));
+        async_read(_sock, buffer(_read_buffer), MEM_FN2(read_complete, pl::_1, pl::_2), 
+                                                MEM_FN2(on_read, pl::_1, pl::_2));
     }
     
-    void rpc::do_write(const std::string& msg) 
+    void rpc::send_msg(const std::string& msg) 
     {
         if (!started()) return;
-        std::copy(msg.begin(), msg.end(), _write_buffer);
-        _sock.async_write_some(buffer(_write_buffer, msg.size()), MEM_FN2(on_write,_1,_2));
+
+        uint32_t size = msg.size(); // send size
+        _sock.async_write_some(buffer(&size, sizeof(decltype(size))), 
+            [self = shared_from_this(), &size, &msg](const error_code& err, size_t bytes)
+            {
+                if(err)
+                {
+                    spdlog::error("[rpc] error"); 
+                    return;
+                }
+                self->send_msg_data(msg, size);
+            });
+    }
+
+    void rpc::send_msg_data(const std::string& msg, uint32_t size) 
+    {
+        if (!started()) return;
+
+        _sock.async_write_some(buffer(msg.data(), size), MEM_FN2(on_write, pl::_1, pl::_2));
     }
 
     size_t rpc::read_complete(const boost::system::error_code& err, size_t bytes) 

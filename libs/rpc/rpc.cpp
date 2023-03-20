@@ -1,6 +1,8 @@
 #include "rpc.hpp"
 #include <spdlog/spdlog.h>
 #include <functional>
+#include <iostream>
+#include <boost/lexical_cast.hpp>
 
 #define MEM_FN1(x,y) std::bind(&self_type::x, shared_from_this(),y)
 #define MEM_FN2(x,y,z) boost::bind(&self_type::x, shared_from_this(),y,z)
@@ -29,12 +31,16 @@ namespace fb
         if (!_started) return;
         _started = false;
         _sock.close();
+        spdlog::warn("[rpc] stop");
     }
     
     void rpc::on_connect(const error_code & err) 
     {
-        if (!err) 
-            postpone_ping();
+        if (!err)
+        {
+            do_read();
+            send_msg("ping");
+        }
         else 
             stop();
     }
@@ -45,17 +51,17 @@ namespace fb
             stop();
         
         if (!started()) 
+        {
+            spdlog::warn("[rpc] rpc doesn't start");
             return;
+        }
             
         // process the msg
         std::string msg(_read_buffer, bytes);
         spdlog::info("[rpc] get message: {}", msg);
-        if (msg.find("ping") == 0) on_ping(msg);
-    }
-
-    void rpc::on_ping(const std::string& msg) 
-    {
-        postpone_ping();
+        if (msg.find("ping") == 0) do_ping();
+        else spdlog::warn("[prc] ERROR coming not ping it is: {}", msg);
+        do_read();
     }
 
     void rpc::do_ping() 
@@ -63,21 +69,16 @@ namespace fb
         spdlog::info("[rpc] send ping message"); 
         send_msg("ping"); 
     }
-
-    void rpc::postpone_ping() 
-    {
-        _timer.expires_from_now(boost::posix_time::millisec(rand() % 7000));
-        _timer.async_wait(std::bind(&rpc::do_ping, shared_from_this()));
-    }
     
     void rpc::on_write(const error_code& err, size_t bytes) 
     { 
-        do_read(); 
+        spdlog::info("write call some logic");
     }
     
     void rpc::do_read() 
     {
-        async_read(_sock, buffer(_read_buffer), MEM_FN2(read_complete, pl::_1, pl::_2), 
+        spdlog::info("[rpc] start read");
+        async_read(_sock, buffer(_read_buffer), boost::asio::transfer_all(), 
                                                 MEM_FN2(on_read, pl::_1, pl::_2));
     }
     
@@ -85,34 +86,26 @@ namespace fb
     {
         if (!started()) return;
 
-        uint32_t size = msg.size(); // send size
-        _sock.async_write_some(buffer(&size, sizeof(decltype(size))), 
-            [self = shared_from_this(), &size, &msg](const error_code& err, size_t bytes)
+        _send_size = boost::lexical_cast<std::string>(msg.size());
+        spdlog::info("[rpc] send message size = {}", _send_size);
+        _sock.async_write_some(buffer(_send_size, _send_size.size()), 
+            [self = shared_from_this(), msg](const error_code& err, size_t bytes)
             {
                 if(err)
                 {
                     spdlog::error("[rpc] error"); 
                     return;
                 }
-                self->send_msg_data(msg, size);
+                self->send_msg_data(msg);
             });
     }
 
-    void rpc::send_msg_data(const std::string& msg, uint32_t size) 
+    void rpc::send_msg_data(const std::string& msg) 
     {
         if (!started()) return;
 
-        _sock.async_write_some(buffer(msg.data(), size), MEM_FN2(on_write, pl::_1, pl::_2));
-    }
-
-    size_t rpc::read_complete(const boost::system::error_code& err, size_t bytes) 
-    {
-        if(err) 
-            return 0;
-
-        bool found = std::find(_read_buffer, _read_buffer + bytes, '\n') < _read_buffer + bytes;
-        
-        return found ? 0 : 1;
+        spdlog::info("[rpc] send message = {}", msg);
+        _sock.async_write_some(buffer(msg.data(), msg.size()), MEM_FN2(on_write, pl::_1, pl::_2));
     }
 
 }

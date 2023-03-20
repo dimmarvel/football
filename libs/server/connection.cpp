@@ -6,12 +6,26 @@
 #include <spdlog/spdlog.h>
 #include <boost/bind.hpp>
 #include <core/serialize.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace fb
 {
+
+    connection::connection(api::api_application& app)
+    :
+    _app(app),
+    _socket(_app.get_context()),
+    _rstrand(_app.get_context())
+    {}
+
     ip::tcp::socket& connection::socket()
     {
         return _socket;
+    }
+
+    void connection::start()
+    {
+        async_read();
     }
 
     void connection::send(std::string message)
@@ -24,22 +38,11 @@ namespace fb
             boost::asio::placeholders::bytes_transferred));
     }
 
-    connection::connection(api::api_application& app)
-    :
-    _app(app),
-    _socket(_app.get_context()),
-    _rstrand(_app.get_context())
-    {}
-    
-    void connection::start()
-    {
-        async_read();
-    }
-
     void connection::async_read()
     {
         spdlog::info("[{}] start receive...", _socket.remote_endpoint().address().to_string());
-        boost::asio::async_read(_socket, boost::asio::buffer(&_rsize, sizeof(decltype(_rsize))),
+        
+        boost::asio::async_read(_socket, boost::asio::buffer(&_rsize_str, sizeof(size_t)),
             [self = shared_from_this()](const boost::system::error_code& err, size_t read_bytes)
             {
                 if(err)
@@ -47,9 +50,7 @@ namespace fb
                     spdlog::error("connection error");
                     return;
                 }
-                
-                spdlog::error("2 _rsize({}) read_bytes({}) _rbuffer({})", self->_rsize, read_bytes, self->_rbuffer);
-                assert(read_bytes == sizeof(decltype(_rsize)));
+                self->_rsize = boost::lexical_cast<size_t>(self->_rsize_str);
                 self->on_read();
             });
     }
@@ -57,6 +58,7 @@ namespace fb
     void connection::handle_receive(const boost::system::error_code & err, size_t read_bytes)
     {
         spdlog::info("[{}] recieve {}", _socket.remote_endpoint().address().to_string(), _rbuffer);
+        async_read();
     }
 
     void connection::on_read()
@@ -73,9 +75,8 @@ namespace fb
                     spdlog::error("connection error 2");
                     return;
                 }
-
-                spdlog::error("2 _rsize({}) read_bytes({}) _rbuffer({})", self->_rsize, read_bytes, self->_rbuffer);
-                assert(read_bytes == sizeof(decltype(_rsize)));
+                spdlog::info("[con] read size == {}", self->_rsize);
+                assert(read_bytes == self->_rsize);
                 self->on_msg_ready();
             });
             
@@ -83,10 +84,7 @@ namespace fb
 
     void connection::on_msg_ready()
     {
-        spdlog::error("3 _rbuffer({})", _rbuffer);
-        uint32_t num;
-        memcpy(&num, _rbuffer.data(), 4);
-        spdlog::error("3 _rbuffer({})", num);
+        spdlog::info("[] recieve {}", _socket.remote_endpoint().address().to_string(), _rbuffer);
         boost::asio::post(_rstrand, [self = shared_from_this()]() 
             { self->message_ev(self, self->_rbuffer); });
             

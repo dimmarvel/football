@@ -30,7 +30,6 @@ namespace fb
         bool started() { return _started; }
         
         void on_connect(const error_code& err);
-        void on_ping(const std::string& msg);
 
         void on_read(const error_code& err, size_t bytes);
         void on_write(const error_code& err, size_t bytes);
@@ -38,17 +37,17 @@ namespace fb
         void send_msg(const std::string& msg);
 
         void do_ping();
-        void postpone_ping();
 
     private:
-        void send_msg_data(const std::string& msg, uint32_t size); 
-        size_t read_complete(const boost::system::error_code& err, size_t bytes);
+        void send_msg_data(const std::string& msg); 
 
     private:
         fb::client::application& _app;
         ip::tcp::socket _sock;
         enum { max_msg = 1024 };
         char _read_buffer[max_msg];
+        std::string _send_size;
+        std::string _send_msg;
         bool _started;
         std::string _username;
         deadline_timer _timer;

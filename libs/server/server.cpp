@@ -34,7 +34,7 @@ namespace fb
     
     void tcp_server::start_accept()
     {
-        spdlog::debug("[server] start accept connections...");
+        spdlog::info("[server] start accept connections...");
         api::connect_ptr new_connection = connection::create(_app);
         
         _acceptor.async_accept(new_connection->socket(),

@@ -38,6 +38,7 @@ namespace fb
         ip::tcp::socket _socket;
         strand_t        _rstrand;
         std::string     _rbuffer;
-        uint32_t        _rsize = 0;
+        size_t          _rsize = 0;
+        std::string     _rsize_str;
     };
 }

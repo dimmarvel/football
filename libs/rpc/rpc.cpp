@@ -9,110 +9,148 @@
 
 namespace fb
 {
-    namespace pl = std::placeholders;
-
-    rpc::rpc(fb::client::application& app) 
+    rpc::rpc(boost::asio::io_context& io_context, const std::string& server, const std::string& path)
     : 
-    _app(app),
-    _sock(_app.get_context()),
-    _started(true), 
-    _username("usr"), 
-    _timer(_app.get_context()) 
-    {}
-
-    void rpc::start(ip::tcp::endpoint ep) 
+    _resolver(io_context),
+    _socket(io_context)
     {
-        spdlog::info("[rpc] rpc start at: {}", ep.address().to_string());
-        _sock.async_connect(ep, std::bind(&rpc::on_connect, shared_from_this(), pl::_1));
+        // Form the request. We specify the "Connection: close" header so that the
+        // server will close the socket after transmitting the response. This will
+        // allow us to treat all data up until the EOF as the content.
+        std::ostream request_stream(&_request);
+        request_stream << "GET " << path << " HTTP/1.0\r\n";
+        request_stream << "Host: " << server << "\r\n";
+        request_stream << "Accept: */*\r\n";
+        request_stream << "Connection: close\r\n\r\n";
+
+        // Start an asynchronous resolve to translate the server and service names
+        // into a list of endpoints.
+        _resolver.async_resolve(server, "http",
+            boost::bind(&rpc::handle_resolve, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::results));
     }
 
-    void rpc::stop() 
+    void rpc::start(ip::tcp::endpoint ep)
     {
-        if (!_started) return;
-        _started = false;
-        _sock.close();
-        spdlog::warn("[rpc] stop");
+        
     }
-    
-    void rpc::on_connect(const error_code & err) 
+
+    void rpc::handle_resolve(const boost::system::error_code& err, const tcp::resolver::results_type& endpoints)
     {
         if (!err)
         {
-            send_msg("ping");
+            // Attempt a connection to each endpoint in the list until we
+            // successfully establish a connection.
+            boost::asio::async_connect(_socket, endpoints,
+                boost::bind(&rpc::handle_connect, this,
+                boost::asio::placeholders::error));
         }
-        else 
-            stop();
+        else
+        {
+            std::cout << "Error: " << err.message() << "\n";
+        }
     }
 
-    void rpc::on_read(const error_code& err, size_t bytes) 
+    void rpc::handle_connect(const boost::system::error_code& err)
     {
-        spdlog::info("[rpc] get message !");
-        if (err) 
-            stop();
-        
-        if (!started()) 
+        if (!err)
         {
-            spdlog::warn("[rpc] rpc doesn't start");
+            // The connection was successful. Send the request.
+            boost::asio::async_write(_socket, _request,
+                boost::bind(&rpc::handle_write_request, this,
+                boost::asio::placeholders::error));
+        }
+        else
+        {
+            std::cout << "Error: " << err.message() << "\n";
+        }
+    }
+
+    void rpc::handle_write_request(const boost::system::error_code& err)
+    {
+        if (!err)
+        {
+        // Read the response status line. The _response streambuf will
+        // automatically grow to accommodate the entire line. The growth may be
+        // limited by passing a maximum size to the streambuf constructor.
+            boost::asio::async_read_until(_socket, _response, "\r\n",
+                boost::bind(&rpc::handle_read_status_line, this,
+                boost::asio::placeholders::error));
+        }
+        else
+        {
+            std::cout << "Error: " << err.message() << "\n";
+        }
+    }
+
+    void rpc::handle_read_status_line(const boost::system::error_code& err)
+    {
+        if (err)
+            std::cout << "Error: " << err << "\n";
+         
+        // Check that response is OK.
+        std::istream response_stream(&_response);
+        std::string http_version;
+        response_stream >> http_version;
+        unsigned int status_code;
+        response_stream >> status_code;
+        std::string status_message;
+        std::getline(response_stream, status_message);
+        if (!response_stream || http_version.substr(0, 5) != "HTTP/")
+        {
+            std::cout << "Invalid response\n";
             return;
         }
-            
-        // process the msg
-        std::string msg(_read_buffer, bytes);
-        spdlog::info("[rpc] get message: {}", msg);
-        if (msg.find("ping") == 0) do_ping();
-        else spdlog::warn("[prc] ERROR coming not ping it is: {}", msg);
-    }
-
-    void rpc::do_ping() 
-    {
-        spdlog::info("[rpc] send ping message"); 
-        send_msg("ping"); 
-    }
-    
-    void rpc::on_write(const error_code& err, size_t bytes) 
-    { 
-        if (err)
+        if (status_code != 200)
         {
-            spdlog::error("write error");
-            stop();
+            std::cout << "Response returned with status code ";
+            std::cout << status_code << "\n";
+            return;
         }
 
-        spdlog::info("write call some logic");
-        do_read();
-    }
-    
-    void rpc::do_read() 
-    {
-        spdlog::info("[rpc] start read");
-        async_read(_sock, buffer(_read_buffer), MEM_FN2(on_read, pl::_1, pl::_2));
-    }
-    
-    void rpc::send_msg(const std::string& msg) 
-    {
-        if (!started()) return;
-
-        _send_msg = msg;
-        _send_size = _send_msg.size();
-        spdlog::info("[rpc] send message size = {}", _send_size);
-        boost::asio::async_write(_sock, buffer(&_send_size, sizeof(size_t)), 
-            [self = shared_from_this(), msg](const error_code& err, size_t bytes)
-            {
-                if(err)
-                {
-                    spdlog::error("[rpc] error"); 
-                    return;
-                }
-                spdlog::info("[rpc] send message size = {}", self->_send_size);
-                self->send_msg_data(msg);
-            });
+        // Read the response headers, which are terminated by a blank line.
+        boost::asio::async_read_until(_socket, _response, "\r\n\r\n",
+            boost::bind(&rpc::handle_read_headers, this,
+            boost::asio::placeholders::error));
     }
 
-    void rpc::send_msg_data(const std::string& msg) 
+    void rpc::handle_read_headers(const boost::system::error_code& err)
     {
-        if (!started()) return;
+        if (err)
+            std::cout << "Error: " << err << "\n";
 
-        spdlog::info("[rpc] send message = {}", msg);
-        boost::asio::async_write(_sock, buffer(msg.data(), msg.size()), MEM_FN2(on_write, pl::_1, pl::_2));
+        // Process the response headers.
+        std::istream response_stream(&_response);
+        std::string header;
+        while (std::getline(response_stream, header) && header != "\r")
+            std::cout << header << "\n";
+        std::cout << "\n";
+
+        // Write whatever content we already have to output.
+        if (_response.size() > 0)
+            std::cout << &_response;
+
+        // Start reading remaining data until EOF.
+        boost::asio::async_read(_socket, _response,
+            boost::asio::transfer_at_least(1),
+            boost::bind(&rpc::handle_read_content, this,
+            boost::asio::placeholders::error));
+    }
+
+    void rpc::handle_read_content(const boost::system::error_code& err)
+    {
+        if (err)
+            std::cout << "Error: " << err << "\n";
+
+        // Write all of the data that has been read so far.
+        std::cout << &_response;
+
+        // Continue reading remaining data until EOF.
+        boost::asio::async_read(_socket, _response,
+            boost::asio::transfer_at_least(1),
+            boost::bind(&rpc::handle_read_content, this,
+            boost::asio::placeholders::error));
     }
 
 }

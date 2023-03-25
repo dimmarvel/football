@@ -27,7 +27,7 @@ namespace fb
         _acceptor.bind(_endpoint);
         _acceptor.listen();
 
-        spdlog::info("[server] server start at: {}", _endpoint.address().to_string());
+        spdlog::info("[server] server start at: {}:{}", _endpoint.address().to_string(), _endpoint.port());
 
         start_accept();
     }

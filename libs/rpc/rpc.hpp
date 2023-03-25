@@ -13,45 +13,26 @@ namespace fb::client
 
 namespace fb
 {
-    using namespace boost::asio; // TODO: delete?
+    using boost::asio::ip::tcp;
 
-    class rpc : public std::enable_shared_from_this<rpc>
+    class rpc
     {
-        typedef rpc self_type;
     public:
-        typedef boost::system::error_code error_code;
-        typedef boost::shared_ptr<rpc> self_ptr;
-        
-        rpc(fb::client::application& app);
-
+        rpc(boost::asio::io_context& io_context, const std::string& server, const std::string& path);
         void start(ip::tcp::endpoint ep);
-
-        void stop();
-        bool started() { return _started; }
         
-        void on_connect(const error_code& err);
-
-        void on_read(const error_code& err, size_t bytes);
-        void on_write(const error_code& err, size_t bytes);
-        void do_read();
-        void send_msg(const std::string& msg);
-
-        void do_ping();
-
     private:
-        void send_msg_data(const std::string& msg); 
-        size_t read_complete(const boost::system::error_code& err, size_t bytes);
+        void handle_resolve(const boost::system::error_code& err, const tcp::resolver::results_type& endpoints);
+        void handle_connect(const boost::system::error_code& err);
+        void handle_write_request(const boost::system::error_code& err);
+        void handle_read_status_line(const boost::system::error_code& err);
+        void handle_read_headers(const boost::system::error_code& err);
+        void handle_read_content(const boost::system::error_code& err);
 
-    private:
-        fb::client::application& _app;
-        ip::tcp::socket _sock;
-        enum { max_msg = 1024 };
-        char _read_buffer[max_msg];
-        size_t _send_size;
-        std::string _send_msg;
-        bool _started;
-        std::string _username;
-        deadline_timer _timer;
+        tcp::resolver _resolver;
+        tcp::socket _socket;
+        boost::asio::streambuf _request;
+        boost::asio::streambuf _response;
     };
 
 }

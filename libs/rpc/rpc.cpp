@@ -38,7 +38,6 @@ namespace fb
     {
         if (!err)
         {
-            do_read();
             send_msg("ping");
         }
         else 
@@ -47,6 +46,7 @@ namespace fb
 
     void rpc::on_read(const error_code& err, size_t bytes) 
     {
+        spdlog::info("[rpc] get message !");
         if (err) 
             stop();
         
@@ -61,7 +61,6 @@ namespace fb
         spdlog::info("[rpc] get message: {}", msg);
         if (msg.find("ping") == 0) do_ping();
         else spdlog::warn("[prc] ERROR coming not ping it is: {}", msg);
-        do_read();
     }
 
     void rpc::do_ping() 
@@ -72,23 +71,30 @@ namespace fb
     
     void rpc::on_write(const error_code& err, size_t bytes) 
     { 
+        if (err)
+        {
+            spdlog::error("write error");
+            stop();
+        }
+
         spdlog::info("write call some logic");
+        do_read();
     }
     
     void rpc::do_read() 
     {
         spdlog::info("[rpc] start read");
-        async_read(_sock, buffer(_read_buffer), boost::asio::transfer_all(), 
-                                                MEM_FN2(on_read, pl::_1, pl::_2));
+        async_read(_sock, buffer(_read_buffer), MEM_FN2(on_read, pl::_1, pl::_2));
     }
     
     void rpc::send_msg(const std::string& msg) 
     {
         if (!started()) return;
 
-        _send_size = boost::lexical_cast<std::string>(msg.size());
+        _send_msg = msg;
+        _send_size = _send_msg.size();
         spdlog::info("[rpc] send message size = {}", _send_size);
-        _sock.async_write_some(buffer(_send_size, _send_size.size()), 
+        boost::asio::async_write(_sock, buffer(&_send_size, sizeof(size_t)), 
             [self = shared_from_this(), msg](const error_code& err, size_t bytes)
             {
                 if(err)
@@ -96,6 +102,7 @@ namespace fb
                     spdlog::error("[rpc] error"); 
                     return;
                 }
+                spdlog::info("[rpc] send message size = {}", self->_send_size);
                 self->send_msg_data(msg);
             });
     }
@@ -105,7 +112,7 @@ namespace fb
         if (!started()) return;
 
         spdlog::info("[rpc] send message = {}", msg);
-        _sock.async_write_some(buffer(msg.data(), msg.size()), MEM_FN2(on_write, pl::_1, pl::_2));
+        boost::asio::async_write(_sock, buffer(msg.data(), msg.size()), MEM_FN2(on_write, pl::_1, pl::_2));
     }
 
 }

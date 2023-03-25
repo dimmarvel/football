@@ -9,7 +9,7 @@ namespace fb
     :
     _app(app),
     _server(std::make_shared<tcp_server>(_app)),
-    _timer(_app.get_context(), 2000) //2000 to constant
+    _timer(_app.get_context(), 6000) //6000 to constant
     {}
 
     void hub::start()
@@ -36,7 +36,7 @@ namespace fb
 
     void hub::on_new_connect(api::connect_ptr c)
     {
-        spdlog::info("[hub] add new connection {}", c->socket().remote_endpoint().address().to_string());
+        spdlog::info("[hub] add new connection {}:{}", c->socket().remote_endpoint().address().to_string(), c->socket().remote_endpoint().port());
         subscribe_on_connection(c);
         _connections.insert(c);
         c->start();
@@ -52,7 +52,7 @@ namespace fb
     void hub::on_message(api::connect_ptr c, std::string msg)
     {
         spdlog::info("[hub] from {} message: {}", c->socket().remote_endpoint().address().to_string(), msg);
-        c->send("ping");
+        c->send("ping\n");
     }
 
     void hub::show_connections()

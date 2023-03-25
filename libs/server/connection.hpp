@@ -39,6 +39,5 @@ namespace fb
         strand_t        _rstrand;
         std::string     _rbuffer;
         size_t          _rsize = 0;
-        std::string     _rsize_str;
     };
 }

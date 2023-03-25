@@ -40,13 +40,14 @@ namespace fb
 
     private:
         void send_msg_data(const std::string& msg); 
+        size_t read_complete(const boost::system::error_code& err, size_t bytes);
 
     private:
         fb::client::application& _app;
         ip::tcp::socket _sock;
         enum { max_msg = 1024 };
         char _read_buffer[max_msg];
-        std::string _send_size;
+        size_t _send_size;
         std::string _send_msg;
         bool _started;
         std::string _username;

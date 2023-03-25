@@ -42,7 +42,7 @@ namespace fb
     {
         spdlog::info("[{}] start receive...", _socket.remote_endpoint().address().to_string());
         
-        boost::asio::async_read(_socket, boost::asio::buffer(&_rsize_str, sizeof(size_t)),
+        boost::asio::async_read(_socket, boost::asio::buffer(&_rsize, sizeof(size_t)),
             [self = shared_from_this()](const boost::system::error_code& err, size_t read_bytes)
             {
                 if(err)
@@ -50,7 +50,7 @@ namespace fb
                     spdlog::error("connection error");
                     return;
                 }
-                self->_rsize = boost::lexical_cast<size_t>(self->_rsize_str);
+                spdlog::warn("read size -> {}", self->_rsize);
                 self->on_read();
             });
     }

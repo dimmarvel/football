@@ -27,6 +27,6 @@ namespace fb::api
         virtual void start() = 0;
 
         virtual void start_accept() = 0;
-        virtual void handle_accept(api::connect_ptr new_conn, const boost::system::error_code& error) = 0;
+        virtual void handle_accept(api::socket_t&& sock, const boost::system::error_code& error) = 0;
     };
 }

@@ -9,7 +9,10 @@ namespace fb
     :
     _app(app),
     _server(std::make_shared<tcp_server>(_app)),
-    _timer(_app.get_context(), 6000) //6000 to constant
+    _timer(_app.get_context()) //6000 to constant
+
+// TIMER FIX
+
     {}
 
     void hub::start()

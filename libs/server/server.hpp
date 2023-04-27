@@ -20,7 +20,7 @@ namespace fb
 
     private:
         void start_accept() override;
-        void handle_accept(api::connect_ptr new_conn, const boost::system::error_code& error) override;
+        void handle_accept(api::socket_t&& sock, const boost::system::error_code& error) override;
 
     private:
         std::mutex              _mutex;

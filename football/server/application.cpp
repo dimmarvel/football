@@ -8,7 +8,7 @@ namespace fb
     application::application(settings& s)
     :   
     _setting(s),
-    _context(),
+    _threads(_context),
     _hub(std::make_shared<hub>(*this)),
     _storage(std::make_shared<storage>())
     {
@@ -17,9 +17,10 @@ namespace fb
 
     void application::start()
     {
-        spdlog::info("[app] Application server start");
+        std::size_t n = _threads.start(4);
+        spdlog::info("[app] Application server start at {} threads", n);
         _hub->start();
-        _context.run();
+        _threads.join();
     }
 
     void application::stop()
@@ -33,8 +34,8 @@ namespace fb
         return _storage;
     }
 
-    boost::asio::any_io_executor application::get_context()
+    boost::asio::io_context& application::get_context()
     {
-        return _context.get_executor();
+        return _context;
     }
 }

@@ -11,11 +11,10 @@
 namespace fb
 {
 
-    connection::connection(api::api_application& app)
+    connection::connection(api::api_application& app, api::socket_t s)
     :
     _app(app),
-    _socket(_app.get_context()),
-    _rstrand(_app.get_context())
+    _socket(std::move(s))
     {}
 
     ip::tcp::socket& connection::socket()
@@ -85,7 +84,7 @@ namespace fb
     void connection::on_msg_ready()
     {
         spdlog::info("[] recieve {}", _socket.remote_endpoint().address().to_string(), _rbuffer);
-        boost::asio::post(_rstrand, [self = shared_from_this()]() 
+        _app.get_context().post([self = shared_from_this()]() 
             { self->message_ev(self, self->_rbuffer); });
             
         async_read();

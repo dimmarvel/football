@@ -13,14 +13,14 @@ namespace fb
     {
     public:
 
-        static api::connect_ptr create(api::api_application& app) // TODO: refactor
+        static api::connect_ptr create(api::api_application& app, api::socket_t s) // TODO: refactor
         {
-            return api::connect_ptr{new connection(app)};
+            return api::connect_ptr{new connection(app, std::move(s))};
         }
 
         void start();
 
-        virtual ip::tcp::socket& socket() override;
+        virtual api::socket_t& socket() override;
         virtual void send(std::string message) override;
 
         void handle_write(const boost::system::error_code& err, size_t s);
@@ -30,13 +30,12 @@ namespace fb
         void async_read();
 
     private:
-        connection(api::api_application& app);
+        connection(api::api_application& app, api::socket_t s);
 
         using strand_t = boost::asio::strand<boost::asio::any_io_executor>;
     private:
         api::api_application& _app;
-        ip::tcp::socket _socket;
-        strand_t        _rstrand;
+        api::socket_t   _socket;
         std::string     _rbuffer;
         size_t          _rsize = 0;
     };

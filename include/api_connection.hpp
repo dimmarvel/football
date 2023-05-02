@@ -12,6 +12,7 @@ namespace fb
 namespace fb::api
 {
     using connect_ptr = std::shared_ptr<connection>;
+    using socket_t = boost::asio::ip::tcp::socket;
     using connections = std::unordered_set<std::shared_ptr<connection>>;
 
     class connection_events : public core::publisher_base
@@ -26,7 +27,7 @@ namespace fb::api
     class api_connection
     {
     public:
-        virtual boost::asio::ip::tcp::socket& socket() = 0;
+        virtual socket_t& socket() = 0;
         virtual void send(std::string message) = 0;
     };
 }
